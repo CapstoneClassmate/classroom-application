@@ -65,32 +65,33 @@ function connect(event) {
 
 
 function onConnected() {
-    if(role === "host") {
-        // Code
-        var roomObject = {
-            roomName: room,
-            host: username
-        }
-        
-        // Tell your username to the server
-        stompClient.send('/app/chat.createRoom', {}, JSON.stringify(roomObject))
-        stompClient.subscribe('/room/' + room, onMessageReceived);
-    } else if (role == "member") {
-        stompClient.subscribe('/room/' + room + '/' + username, onMessageReceived);
-    }
     
-
     var chatMessage = {
         sender: username,
         type: 'JOIN',
         content: '',
-        roomNumber: room,
+        roomName: room,
         role: role
     };
     
-    // Tell your username to the server
+    var roomObject = {
+        roomName: room,
+        host: username
+    };
+    
+    if (role === "host") {
+        // Create the room
+        stompClient.send('/app/chat.createRoom', {}, JSON.stringify(roomObject));
+        // Subscribe to the master room
+        stompClient.subscribe('/room/' + room, onMessageReceived);
+    } else if (role === "member") {     
+        // Add the user to the room
+        stompClient.send('/app/chat.addUser', {}, JSON.stringify(chatMessage));
+        // Subscribe to the indivudals room
+        stompClient.subscribe('/room/' + room + '/' + username, onMessageReceived);
+    }
+    // Send the join messsage for both.
     stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(chatMessage))
-
     connectingElement.classList.add('hidden');
 }
 
@@ -109,7 +110,7 @@ function sendMessage(event) {
             sender: username,
             content: messageInput.value,
             type: 'CHAT',
-            roomNumber: room,
+            roomName: room,
             role: role
         };
 

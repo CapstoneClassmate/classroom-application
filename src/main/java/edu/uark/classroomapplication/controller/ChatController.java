@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 
 import edu.uark.classroomapplication.model.ChatMessage;
 import edu.uark.classroomapplication.model.Room;
+import edu.uark.classroomapplication.model.User;
 
 @Controller
 public class ChatController {
@@ -29,8 +30,9 @@ public class ChatController {
     
     @MessageMapping("/chat.createRoom")
     public Room createRoom(@Payload Room room) {
+    	logger.info("Room created.");
+    	logger.info(room.getRoomName());
     	// Add the host as a member of the room
-    	room.addUser(room.getHost());
     	allRooms.add(room);
     	
     	return room;
@@ -39,34 +41,36 @@ public class ChatController {
     
 	@MessageMapping("/chat.sendMessage")
     public ChatMessage sendMessage(@Payload ChatMessage chatMessage) {
-        logger.info(chatMessage.getContent());
-
-        if(chatMessage.getRole() == "host") {
-        	Room r;
+        messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomName(), chatMessage);
         
-        	
-        } else if (chatMessage.getRole() == "member") {
-        	
-        	
+        if(chatMessage.getRole().equals("host")) {
+        	for (Room r : allRooms) {		
+        		if(r.getRoomName().equals(chatMessage.getRoomName())) {
+        			for(User u : r.getUsers())  {
+        				System.out.println("/room/" + chatMessage.getRoomName() + "/" + u.getUsername());
+        				messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomName() + "/" + u.getUsername(), chatMessage);
+        			}
+        		}
+        	}
+
+        } else if (chatMessage.getRole().equals("member")) {
+        	messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomName() + "/" + chatMessage.getSender(), chatMessage);
         }
         
-        
-        messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomNumber(), chatMessage);
-        messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomNumber() + "/" + chatMessage.getSender(), chatMessage);
-        
-        // Add message to the database. 
         return chatMessage;
     }
 
     @MessageMapping("/chat.addUser")
     public ChatMessage addUser(@Payload ChatMessage chatMessage) {
-        logger.info(chatMessage.getContent());
-
-        messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomNumber(), chatMessage);
-        messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomNumber() + "/" + chatMessage.getSender(), chatMessage);
+    	logger.info("User added to room " + chatMessage.getRoomName() + " with name " + chatMessage.getSender());
+        logger.info(chatMessage.getRoomName());
         
-        
-        
+        for(Room r : allRooms) {
+        	if(r.getRoomName().equals(chatMessage.getRoomName())) {
+        		r.addUser(new User(chatMessage.getSender()));
+        	}
+        }
+       
         return chatMessage;
     }
 

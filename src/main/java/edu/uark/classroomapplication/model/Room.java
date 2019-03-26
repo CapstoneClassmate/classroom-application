@@ -12,6 +12,8 @@ public class Room {
 	public Room() {
 		roomName = "ERROR";
 		host = new User("ERROR");
+		users = new ArrayList<User>();
+		messages = new ArrayList<ChatMessage>();
 	}
 	
 	public Room(String roomName, User host) {
@@ -22,11 +24,7 @@ public class Room {
 	}
 	
 	public void addUser(User u) {
-		if(!users.contains(u)) {
-			users.add(u);
-		} else {
-			// Send some message to the server that the user is already in the room.
-		}
+		users.add(u);
 	}
 	
 	public void removeUser(User u) {
@@ -35,6 +33,10 @@ public class Room {
 		} else {
 			// Send some message to the server that the user was not in the room.
 		}
+	}
+	
+	public ArrayList<User> getUsers() {
+		return users;
 	}
 	
 	public void addMessage(ChatMessage m) {

@@ -4,7 +4,7 @@ public class ChatMessage {
     private MessageType type;
     private String content;
     private String sender;
-    private String roomNumber;
+    private String roomName;
     private String role;
 
     public enum MessageType {
@@ -37,12 +37,12 @@ public class ChatMessage {
         this.sender = sender;
     }
 
-	public String getRoomNumber() {
-		return roomNumber;
+	public String getRoomName() {
+		return roomName;
 	}
 
-	public void setRoomNumber(String roomNumber) {
-		this.roomNumber = roomNumber;
+	public void setRoomName(String roomName) {
+		this.roomName = roomName;
 	}
 
 	public String getRole() {
