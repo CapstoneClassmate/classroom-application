@@ -65,7 +65,15 @@ function connect(event) {
 
 
 function onConnected() {
-    if(role === "host"){
+    if(role === "host") {
+        // Code
+        var roomObject = {
+            roomName: room,
+            host: username
+        }
+        
+        // Tell your username to the server
+        stompClient.send('/app/chat.createRoom', {}, JSON.stringify(roomObject))
         stompClient.subscribe('/room/' + room, onMessageReceived);
     } else if (role == "member") {
         stompClient.subscribe('/room/' + room + '/' + username, onMessageReceived);
