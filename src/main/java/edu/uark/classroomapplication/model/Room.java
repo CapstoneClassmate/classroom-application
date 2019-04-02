@@ -9,6 +9,8 @@ public class Room {
 	private ArrayList<User> users;
 	private ArrayList<ChatMessage> messages;
 	
+	public static ArrayList<Room> allRooms = new ArrayList<Room>();
+	
 	public Room() {
 		roomName = "ERROR";
 		host = new User("ERROR");

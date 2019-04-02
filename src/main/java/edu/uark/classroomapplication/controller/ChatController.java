@@ -25,26 +25,18 @@ public class ChatController {
     @Autowired 
     JdbcTemplate database;
     
-    ArrayList<Room> allRooms = new ArrayList<Room>();
-    
-    
-    @MessageMapping("/chat.createRoom")
-    public Room createRoom(@Payload Room room) {
-    	logger.info("Room created.");
-    	logger.info(room.getRoomName());
-    	// Add the host as a member of the room
-    	allRooms.add(room);
-    	
-    	return room;
-    }
-    
-    
+
+    /*
+     * This method sends messages to all needed parties. 
+     * If the user is a host it will send a message to all the members in the classroom. 
+     * If the user is a member it will send the message to the hosts chat room which only they will be able to see.
+     */
 	@MessageMapping("/chat.sendMessage")
     public ChatMessage sendMessage(@Payload ChatMessage chatMessage) {
         messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomName(), chatMessage);
         
         if(chatMessage.getRole().equals("host")) {
-        	for (Room r : allRooms) {		
+        	for (Room r : Room.allRooms) {		
         		if(r.getRoomName().equals(chatMessage.getRoomName())) {
         			for(User u : r.getUsers())  {
         				System.out.println("/room/" + chatMessage.getRoomName() + "/" + u.getUsername());
@@ -65,7 +57,7 @@ public class ChatController {
     	logger.info("User added to room " + chatMessage.getRoomName() + " with name " + chatMessage.getSender());
         logger.info(chatMessage.getRoomName());
         
-        for(Room r : allRooms) {
+        for(Room r : Room.allRooms) {
         	if(r.getRoomName().equals(chatMessage.getRoomName())) {
         		r.addUser(new User(chatMessage.getSender()));
         	}
