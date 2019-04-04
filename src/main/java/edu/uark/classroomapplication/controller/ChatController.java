@@ -14,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import edu.uark.classroomapplication.model.ChatMessage;
 import edu.uark.classroomapplication.model.Room;
 import edu.uark.classroomapplication.model.User;
+import edu.uark.classroomapplication.model.ChatMessage.MessageType;
 
 @Controller
 public class ChatController {
@@ -100,26 +101,22 @@ public class ChatController {
     @MessageMapping("/chat.userLeft")
     public ChatMessage userLeft(@Payload ChatMessage chatMessage) {
         messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomName(), chatMessage);
-
-        if (chatMessage.getRole().equals("user")) {
-            for (Room r : allRooms) {
-                if (r.getRoomName().equals(chatMessage.getRoomName())) {
-                    for (User u : r.getUsers()) {
-                        messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomName() + "/" + u.getUsername(), chatMessage);
-                        messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomName() + "/" + chatMessage.getSender(), chatMessage);
-                    }
-                }
-            }
-        } else if (chatMessage.getRole().equals("host")) {
-            for (Room r : allRooms) {
-                if (r.getRoomName().equals(chatMessage.getRoomName())) {
-                    messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomName() + "/" + r.getHost(), chatMessage);
-                    messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomName() + "/" + chatMessage.getSender(), chatMessage);
-                }
-            }
+        
+        if(chatMessage.getType() == MessageType.LEAVE) {
+	        if (chatMessage.getRole().equals("member")) 
+	        	messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomName() + "/" + chatMessage.getSender(), chatMessage);
+	        else if (chatMessage.getRole().equals("host")) 
+	            for (Room r : allRooms) 
+	                if (r.getRoomName().equals(chatMessage.getRoomName())) {
+	                	for(User u : r.getUsers()) {
+	                		messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomName() + "/" + u.getUsername(), chatMessage);
+	                	}
+	                }
+	        return chatMessage;
+        } else {
+        	throw new RuntimeException("Your going to the wrong route. You want to " + chatMessage.getType() + ", but this route is for leaving");
         }
-
-        return chatMessage;
+        
     }
 
     @MessageMapping("/chat.removeAllUsers")
