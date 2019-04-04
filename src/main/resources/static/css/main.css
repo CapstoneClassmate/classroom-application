@@ -131,6 +131,12 @@ button.primary {
     color: #fff;
 }
 
+button.disconnect {
+    background-color: #ff4743;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.12);
+    color: #fff;
+}
+
 button.accent {
     background-color: #ff4743;
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.12);
@@ -253,7 +259,7 @@ button.accent {
 
 #messageForm .input-group input {
     float: left;
-    width: calc(100% - 85px);
+    width: calc(100% - 175px);
 }
 
 #messageForm .input-group button {
@@ -314,7 +320,7 @@ button.accent {
     }
 
     #messageForm .input-group input {
-        width: calc(100% - 70px);
+        width: calc(100% - 140px);
     }
 
     .chat-header {
