@@ -216,6 +216,7 @@ function onClose(e) {
     storeStartPage();
     storeUserDetails();
     e.preventDefault();
+    e.returnValue = '';
 }
 
 function viewHomePage() {
