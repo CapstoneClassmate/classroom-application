@@ -24,15 +24,16 @@ var colors = [
     '#ffc107', '#ff85af', '#FF9800', '#39bbb0'
 ];
 
-function sessionEvent(value) {
-    if(value === "Host") {
+function setRole(value) {
+    if(value === "host") {
         role = "host";
-    } else if(value === "Join") {
+        sessionChooser.classList.add('hidden');
+        roomSelectorPage.classList.remove('hidden');
+    } else if(value === "member") {
         role = "member";
-    }
-    sessionChooser.classList.add('hidden');
-    roomSelectorPage.classList.remove('hidden');
-    
+        sessionChooser.classList.add('hidden');
+        roomSelectorPage.classList.remove('hidden');
+    }    
 }
 
 function roomEntered(event) {
