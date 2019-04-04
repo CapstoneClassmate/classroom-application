@@ -216,10 +216,9 @@ function onClose(e) {
     storeStartPage();
     storeUserDetails();
     e.preventDefault();
-    event.returnValue = '';
 }
 
-window.addEventListener("beforeunload", onClose);
+window.addEventListener("beforeunload", onClose, true);
 roomSelectorForm.addEventListener('submit', roomEntered, true);
 usernameForm.addEventListener('submit', userNameFormSubmit, true)
 messageForm.addEventListener('submit', sendMessage, true)
