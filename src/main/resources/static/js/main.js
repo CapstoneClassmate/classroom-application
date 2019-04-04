@@ -54,6 +54,7 @@ function connect(event) {
     if(username) {
         usernamePage.classList.add('hidden');
         chatPage.classList.remove('hidden');
+        document.getElementById("chat-header-text").innerText = room;
 
         var socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
