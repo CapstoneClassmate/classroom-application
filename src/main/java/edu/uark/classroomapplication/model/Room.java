@@ -29,12 +29,20 @@ public class Room {
 		users.add(u);
 	}
 	
-	public void removeUser(User u) {
-		if(users.contains(u)) {
-			users.remove(u);
-		} else {
-			// Send some message to the server that the user was not in the room.
+	public void removeUser(String u) {
+		for(User x : users) {
+			if (x.getUsername().equals(u)) {
+				users.remove(x);
+				break;
+			} else {
+				// Send some message to the server that the user was not in the room.
+				System.out.println("ERROR: User not in room!!!");
+			}
 		}
+	}
+
+	public void removeAllUsers() {
+		users.clear();
 	}
 	
 	public ArrayList<User> getUsers() {
