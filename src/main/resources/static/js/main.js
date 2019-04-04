@@ -3,7 +3,7 @@
 var usernamePage = document.querySelector('#username-page');
 var roomSelectorPage = document.querySelector("#room-selector")
 var chatPage = document.querySelector('#chat-page');
-var sessionChooser = document.querySelector('#session-chooser');
+var sessionChooserPage = document.querySelector('#session-chooser');
 
 var usernameForm = document.querySelector('#usernameForm');
 var roomSelectorForm = document.querySelector('#roomSelectorForm');
@@ -25,33 +25,29 @@ var colors = [
 ];
 
 function sessionEvent(value) {
-    if(value === "Host") {
+    if (value === "Host") {
         role = "host";
-    } else if(value === "Join") {
+    } else if (value === "Join") {
         role = "member";
     }
-    sessionChooser.classList.add('hidden');
+    sessionChooserPage.classList.add('hidden');
     roomSelectorPage.classList.remove('hidden');
-    
 }
 
 function roomEntered(event) {
     room = document.querySelector('#room').value.trim();
-    if(room) {
+    if (room) {
         console.log("Room " + room);
         roomSelectorPage.classList.add('hidden');
         usernamePage.classList.remove('hidden');
     }
     event.preventDefault();
-
-    
 }
 
 function connect(event) {
-    console.log("hello");
     username = document.querySelector('#name').value.trim();
 
-    if(username) {
+    if (username) {
         usernamePage.classList.add('hidden');
         chatPage.classList.remove('hidden');
 
@@ -63,9 +59,7 @@ function connect(event) {
     event.preventDefault();
 }
 
-
 function onConnected() {
-    
     var chatMessage = {
         sender: username,
         type: 'JOIN',
@@ -73,18 +67,18 @@ function onConnected() {
         roomName: room,
         role: role
     };
-    
+
     var roomObject = {
         roomName: room,
         host: username
     };
-    
+
     if (role === "host") {
         // Create the room
         stompClient.send('/app/chat.createRoom', {}, JSON.stringify(roomObject));
         // Subscribe to the master room
         stompClient.subscribe('/room/' + room, onMessageReceived);
-    } else if (role === "member") {     
+    } else if (role === "member") {
         // Add the user to the room
         stompClient.send('/app/chat.addUser', {}, JSON.stringify(chatMessage));
         // Subscribe to the indivudals room
@@ -95,17 +89,15 @@ function onConnected() {
     connectingElement.classList.add('hidden');
 }
 
-
 function onError(error) {
     connectingElement.textContent = 'Could not connect to WebSocket server. Please refresh this page to try again!';
     connectingElement.style.color = 'red';
 }
 
-
 function sendMessage(event) {
     var messageContent = messageInput.value.trim();
 
-    if(messageContent && stompClient) {
+    if (messageContent && stompClient) {
         var chatMessage = {
             sender: username,
             content: messageInput.value,
@@ -120,13 +112,12 @@ function sendMessage(event) {
     event.preventDefault();
 }
 
-
 function onMessageReceived(payload) {
     var message = JSON.parse(payload.body);
 
     var messageElement = document.createElement('li');
 
-    if(message.type === 'JOIN') {
+    if (message.type === 'JOIN') {
         messageElement.classList.add('event-message');
         message.content = message.sender + ' joined!';
     } else if (message.type === 'LEAVE') {
@@ -157,7 +148,6 @@ function onMessageReceived(payload) {
     messageArea.appendChild(messageElement);
     messageArea.scrollTop = messageArea.scrollHeight;
 }
-
 
 function getAvatarColor(messageSender) {
     var hash = 0;
