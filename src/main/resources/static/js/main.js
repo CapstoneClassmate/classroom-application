@@ -4,6 +4,7 @@ var usernamePage = document.querySelector('#username-page');
 var roomSelectorPage = document.querySelector("#room-selector")
 var chatPage = document.querySelector('#chat-page');
 var sessionChooserPage = document.querySelector('#session-chooser');
+const pages = [usernamePage, roomSelectorPage, chatPage, sessionChooserPage];
 
 var usernameForm = document.querySelector('#usernameForm');
 var roomSelectorForm = document.querySelector('#roomSelectorForm');
@@ -23,6 +24,19 @@ var colors = [
     '#2196F3', '#32c787', '#00BCD4', '#ff5652',
     '#ffc107', '#ff85af', '#FF9800', '#39bbb0'
 ];
+
+function main() {
+    loadState();
+}
+
+function loadState() {
+    let startPageId = window.localStorage.getItem("startPageId") || "session-chooser";
+    let currentPageId = getCurrentPageId();
+    if(startPageId != currentPageId) {
+        document.querySelector("#" + currentPageId).classList.add("hidden");
+        document.querySelector("#" + startPageId).classList.remove("hidden");
+    }
+}
 
 function sessionEvent(value) {
     if (value === "Host") {
@@ -159,6 +173,27 @@ function getAvatarColor(messageSender) {
     return colors[index];
 }
 
+function getCurrentPageId() {
+    let currentPage = pages.find(page => !page.classList.contains("hidden"));
+    if (currentPage === undefined) {
+        return undefined;
+    } else {
+        return currentPage.id;
+    }
+}
+
+function storeStartPage() {
+    window.localStorage.setItem("startPageId", getCurrentPageId());
+}
+
+function onClose(e) {
+    storeStartPage();
+    e.preventDefault();
+    event.returnValue = '';
+}
+
+window.addEventListener("beforeunload", onClose);
 roomSelectorForm.addEventListener('submit', roomEntered, true);
 usernameForm.addEventListener('submit', connect, true)
 messageForm.addEventListener('submit', sendMessage, true)
+main();
