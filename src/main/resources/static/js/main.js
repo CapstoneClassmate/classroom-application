@@ -16,6 +16,7 @@ var messageArea = document.querySelector('#messageArea');
 var connectingElement = document.querySelector('.connecting');
 
 var stompClient = null;
+var socket = null;
 var username = null;
 var room = null;
 var role = null;
@@ -32,7 +33,20 @@ function main() {
 function loadState() {
     let startPageId = window.localStorage.getItem("startPageId") || "session-chooser";
     let currentPageId = getCurrentPageId();
-    if(startPageId != currentPageId) {
+    if (startPageId == "chat-page") {
+        let storedUsername = window.localStorage.getItem("username");
+        let storedRoom = window.localStorage.getItem("room");
+        let storedRole = window.localStorage.getItem("role");
+        if ((storedUsername || storedRoom || storedRole) == undefined) {
+            startPageId = "session-chooser";
+        } else {
+            username = storedUsername;
+            room = storedRoom;
+            role = storedRole;
+            stompConnect();
+        }
+    }
+    if (startPageId != currentPageId) {
         document.querySelector("#" + currentPageId).classList.add("hidden");
         document.querySelector("#" + startPageId).classList.remove("hidden");
     }
@@ -58,19 +72,25 @@ function roomEntered(event) {
     event.preventDefault();
 }
 
-function connect(event) {
+function userNameFormSubmit(event) {
     username = document.querySelector('#name').value.trim();
 
     if (username) {
         usernamePage.classList.add('hidden');
         chatPage.classList.remove('hidden');
-
-        var socket = new SockJS('/ws');
-        stompClient = Stomp.over(socket);
-
-        stompClient.connect({}, onConnected, onError);
+        stompConnect();
     }
     event.preventDefault();
+}
+
+function stompConnect() {
+    if (!socket) {
+        socket = new SockJS('/ws');
+    }
+    if (!stompClient) {
+        stompClient = Stomp.over(socket);
+    }
+    stompClient.connect({}, onConnected, onError);
 }
 
 function onConnected() {
@@ -186,14 +206,21 @@ function storeStartPage() {
     window.localStorage.setItem("startPageId", getCurrentPageId());
 }
 
+function storeUserDetails() {
+    window.localStorage.setItem("username", username);
+    window.localStorage.setItem("room", room);
+    window.localStorage.setItem("role", role);
+}
+
 function onClose(e) {
     storeStartPage();
+    storeUserDetails();
     e.preventDefault();
     event.returnValue = '';
 }
 
 window.addEventListener("beforeunload", onClose);
 roomSelectorForm.addEventListener('submit', roomEntered, true);
-usernameForm.addEventListener('submit', connect, true)
+usernameForm.addEventListener('submit', userNameFormSubmit, true)
 messageForm.addEventListener('submit', sendMessage, true)
 main();
