@@ -218,6 +218,20 @@ function onClose(e) {
     e.preventDefault();
 }
 
+function viewHomePage() {
+    pages.forEach(page => {
+        if(!page.classList.contains("hidden")){
+            page.classList.add("hidden")
+        }
+    });
+    sessionChooserPage.classList.remove('hidden');
+}
+
+function clearSession(e) {
+    localStorage.clear();
+    viewHomePage();
+}
+
 window.addEventListener("beforeunload", onClose, true);
 roomSelectorForm.addEventListener('submit', roomEntered, true);
 usernameForm.addEventListener('submit', userNameFormSubmit, true)
