@@ -33,18 +33,21 @@ public class ChatController {
      */
 	@MessageMapping("/chat.sendMessage")
     public ChatMessage sendMessage(@Payload ChatMessage chatMessage) {
+		
+		// Send the message to admin room
         messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomName(), chatMessage);
         
+        // Send the message to all the users in the room, if the host sends the message.
         if(chatMessage.getRole().equals("host")) {
         	for (Room r : Room.allRooms) {		
         		if(r.getRoomName().equals(chatMessage.getRoomName())) {
-        			for(User u : r.getUsers())  {
+        			for(User u : r.getUsers()) {
         				System.out.println("/room/" + chatMessage.getRoomName() + "/" + u.getUsername());
         				messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomName() + "/" + u.getUsername(), chatMessage);
         			}
         		}
         	}
-
+        // Send the message to the user's own room if user is a member. 
         } else if (chatMessage.getRole().equals("member")) {
         	messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomName() + "/" + chatMessage.getSender(), chatMessage);
         }

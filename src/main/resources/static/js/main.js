@@ -14,10 +14,11 @@ var messageInput = document.querySelector('#message');
 var messageArea = document.querySelector('#messageArea');
 var connectingElement = document.querySelector('.connecting');
 
-var stompClient = null;
+var server = null;
 var username = null;
 var room = null;
 var role = null;
+var uuid = null;
 
 var colors = [
     '#2196F3', '#32c787', '#00BCD4', '#ff5652',
@@ -43,8 +44,6 @@ function roomEntered(event) {
         usernamePage.classList.remove('hidden');
     }
     event.preventDefault();
-
-    
 }
 
 function connect(event) {
@@ -56,10 +55,10 @@ function connect(event) {
         chatPage.classList.remove('hidden');
 
         var socket = new SockJS('/ws');
-        stompClient = Stomp.over(socket);
-
-        stompClient.connect({}, onConnected, onError);
-    }
+        server = Stomp.over(socket);
+        
+        server.connect({}, onConnected, onError);     
+	}
     event.preventDefault();
 }
 
@@ -76,22 +75,24 @@ function onConnected() {
     
     var roomObject = {
         roomName: room,
-        host: username
+        host: username,
+        uuid: null
     };
     
     if (role === "host") {
+        roomObject.uuid = uuidv4();
         // Create the room
-        stompClient.send('/app/chat.createRoom', {}, JSON.stringify(roomObject));
+        server.send('/app/chat.createRoom', {}, JSON.stringify(roomObject));
         // Subscribe to the master room
-        stompClient.subscribe('/room/' + room, onMessageReceived);
+        server.subscribe('/room/' + room, onServerMessageReceived);
     } else if (role === "member") {     
         // Add the user to the room
-        stompClient.send('/app/chat.addUser', {}, JSON.stringify(chatMessage));
+        server.send('/app/chat.addUser', {}, JSON.stringify(chatMessage));
         // Subscribe to the indivudals room
-        stompClient.subscribe('/room/' + room + '/' + username, onMessageReceived);
+        server.subscribe('/room/' + room + '/' + username, onServerMessageReceived);
     }
     // Send the join messsage for both.
-    stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(chatMessage))
+    server.send('/app/chat.sendMessage', {}, JSON.stringify(chatMessage))
     connectingElement.classList.add('hidden');
 }
 
@@ -105,7 +106,7 @@ function onError(error) {
 function sendMessage(event) {
     var messageContent = messageInput.value.trim();
 
-    if(messageContent && stompClient) {
+    if(messageContent && server) {
         var chatMessage = {
             sender: username,
             content: messageInput.value,
@@ -114,50 +115,69 @@ function sendMessage(event) {
             role: role
         };
 
-        stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
+        server.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
         messageInput.value = '';
     }
     event.preventDefault();
 }
 
 
-function onMessageReceived(payload) {
+// This function I think will be able to handle other events from the server that are not messages
+// Mostly errors, ex: The room name is already taken, the username is already taken etc
+
+
+
+function onServerMessageReceived(payload) {
     var message = JSON.parse(payload.body);
 
     var messageElement = document.createElement('li');
-
-    if(message.type === 'JOIN') {
-        messageElement.classList.add('event-message');
-        message.content = message.sender + ' joined!';
-    } else if (message.type === 'LEAVE') {
-        messageElement.classList.add('event-message');
-        message.content = message.sender + ' left!';
-    } else {
-        messageElement.classList.add('chat-message');
-
-        var avatarElement = document.createElement('i');
-        var avatarText = document.createTextNode(message.sender[0]);
-        avatarElement.appendChild(avatarText);
-        avatarElement.style['background-color'] = getAvatarColor(message.sender);
-
-        messageElement.appendChild(avatarElement);
-
-        var usernameElement = document.createElement('span');
-        var usernameText = document.createTextNode(message.sender);
-        usernameElement.appendChild(usernameText);
-        messageElement.appendChild(usernameElement);
-    }
-
-    var textElement = document.createElement('p');
-    var messageText = document.createTextNode(message.content);
-    textElement.appendChild(messageText);
-
-    messageElement.appendChild(textElement);
-
-    messageArea.appendChild(messageElement);
-    messageArea.scrollTop = messageArea.scrollHeight;
+	
+	if(message.type === 'ERROR') {
+		console.log(message.content);
+	}
+	
+	
+	if(message.type === 'JOIN' || message.type === 'LEAVE' || message.type === 'CHAT') {
+	    if(message.type === 'JOIN') {
+	        messageElement.classList.add('event-message');
+	        message.content = message.sender + ' joined!';
+	    } else if (message.type === 'LEAVE') {
+	        messageElement.classList.add('event-message');
+	        message.content = message.sender + ' left!';
+	    } else {
+	  
+	        messageElement.classList.add('chat-message');
+	
+	        var avatarElement = document.createElement('i');
+	        var avatarText = document.createTextNode(message.sender[0]);
+	        avatarElement.appendChild(avatarText);
+	        avatarElement.style['background-color'] = getAvatarColor(message.sender);
+	
+	        messageElement.appendChild(avatarElement);
+	
+	        var usernameElement = document.createElement('span');
+	        var usernameText = document.createTextNode(message.sender);
+	        usernameElement.appendChild(usernameText);
+	        messageElement.appendChild(usernameElement);
+	    }
+	
+	    var textElement = document.createElement('p');
+	    var messageText = document.createTextNode(message.content);
+	    textElement.appendChild(messageText);
+	
+	    messageElement.appendChild(textElement);
+	
+	    messageArea.appendChild(messageElement);
+	    messageArea.scrollTop = messageArea.scrollHeight;
+	}
 }
 
+
+function uuidv4() {
+  return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+  )
+}
 
 function getAvatarColor(messageSender) {
     var hash = 0;
@@ -170,5 +190,5 @@ function getAvatarColor(messageSender) {
 }
 
 roomSelectorForm.addEventListener('submit', roomEntered, true);
-usernameForm.addEventListener('submit', connect, true)
-messageForm.addEventListener('submit', sendMessage, true)
+usernameForm.addEventListener('submit', connect, true);
+messageForm.addEventListener('submit', sendMessage, true);

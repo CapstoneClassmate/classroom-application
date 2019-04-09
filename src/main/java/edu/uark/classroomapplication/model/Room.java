@@ -9,6 +9,7 @@ public class Room {
 	private ArrayList<User> users;
 	private ArrayList<ChatMessage> messages;
 	
+	// Arraylist for all active rooms on the server. 
 	public static ArrayList<Room> allRooms = new ArrayList<Room>();
 	
 	public Room() {
