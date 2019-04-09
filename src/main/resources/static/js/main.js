@@ -25,15 +25,16 @@ var colors = [
     '#ffc107', '#ff85af', '#FF9800', '#39bbb0'
 ];
 
-function sessionEvent(value) {
-    if(value === "Host") {
+function setRole(value) {
+    if(value === "host") {
         role = "host";
-    } else if(value === "Join") {
+        sessionChooser.classList.add('hidden');
+        roomSelectorPage.classList.remove('hidden');
+    } else if(value === "member") {
         role = "member";
-    }
-    sessionChooser.classList.add('hidden');
-    roomSelectorPage.classList.remove('hidden');
-    
+        sessionChooser.classList.add('hidden');
+        roomSelectorPage.classList.remove('hidden');
+    }    
 }
 
 function roomEntered(event) {
@@ -53,6 +54,7 @@ function connect(event) {
     if(username) {
         usernamePage.classList.add('hidden');
         chatPage.classList.remove('hidden');
+        document.getElementById("chat-header-text").innerText = room;
 
         var socket = new SockJS('/ws');
         server = Stomp.over(socket);
@@ -62,9 +64,7 @@ function connect(event) {
     event.preventDefault();
 }
 
-
 function onConnected() {
-    
     var chatMessage = {
         sender: username,
         type: 'JOIN',
@@ -96,14 +96,47 @@ function onConnected() {
     connectingElement.classList.add('hidden');
 }
 
+// When user unloads page, notify room that user has left and remove from room
+function disconnected() {
+   var chatMessage = {
+       sender: username,
+       type: 'LEAVE',
+       content: '',
+       roomName: room,
+       role: role
+   };
+
+   if (role === "host") {
+       // Inform users that host left.
+       stompClient.send('/app/chat.userLeft', {}, JSON.stringify(chatMessage));
+       // Remove the host & users from the room, and terminate the room
+       stompClient.send('/app/chat.removeAllUsers', {}, JSON.stringify(chatMessage));
+       stompClient.send('/app/chat.terminateRoom', {}, JSON.stringify(chatMessage));
+       // Navigate user to home page
+       chatPage.classList.add('hidden');
+       sessionChooser.classList.remove('hidden');
+   } else if (role === "member") {
+       // Remove user from room
+       stompClient.send('/app/chat.removeUser', {}, JSON.stringify(chatMessage));
+       // Send the leave message for both.
+       stompClient.send('/app/chat.userLeft', {}, JSON.stringify(chatMessage));
+       // Navigate user to home page
+       chatPage.classList.add('hidden');
+       sessionChooser.classList.remove('hidden');
+   }
+
+   connectingElement.classList.add('hidden');
+}
 
 function onError(error) {
     connectingElement.textContent = 'Could not connect to WebSocket server. Please refresh this page to try again!';
     connectingElement.style.color = 'red';
 }
 
-
 function sendMessage(event) {
+    console.log(event);
+    var val = messageInput.value;
+    console.log(val);
     var messageContent = messageInput.value.trim();
 
     if(messageContent && server) {
@@ -192,3 +225,4 @@ function getAvatarColor(messageSender) {
 roomSelectorForm.addEventListener('submit', roomEntered, true);
 usernameForm.addEventListener('submit', connect, true);
 messageForm.addEventListener('submit', sendMessage, true);
+// window.onbeforeunload = disconnected;
