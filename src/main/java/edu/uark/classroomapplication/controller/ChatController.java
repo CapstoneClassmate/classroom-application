@@ -75,10 +75,10 @@ public class ChatController {
         logger.info("User removed from room " + chatMessage.getRoomName() + " with name " + chatMessage.getSender());
         logger.info(chatMessage.getRoomName());
 
-        for (int i = 0; i < allRooms.size(); i++) {
-            Room r = allRooms.get(i);
+        for (int i = 0; i < Room.allRooms.size(); i++) {
+            Room r = Room.allRooms.get(i);
             if (r.getRoomName().equals(chatMessage.getRoomName())) {
-                ArrayList<User> users = allRooms.get(i).getUsers();
+                ArrayList<User> users = Room.allRooms.get(i).getUsers();
                 for (int j = 0; j < users.size(); j++) {
                     User u = users.get(j);
                     if (u.equals(chatMessage.getSender())) {
@@ -101,7 +101,7 @@ public class ChatController {
 	        if (chatMessage.getRole().equals("member")) 
 	        	messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomName() + "/" + chatMessage.getSender(), chatMessage);
 	        else if (chatMessage.getRole().equals("host")) 
-	            for (Room r : allRooms) 
+	            for (Room r : Room.allRooms) 
 	                if (r.getRoomName().equals(chatMessage.getRoomName())) {
 	                	for(User u : r.getUsers()) {
 	                		messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomName() + "/" + u.getUsername(), chatMessage);
@@ -119,7 +119,7 @@ public class ChatController {
         logger.info("All users removed from room " + chatMessage.getRoomName() + " with host " + chatMessage.getSender());
         logger.info(chatMessage.getRoomName());
 
-        for (Room room : allRooms) {
+        for (Room room : Room.allRooms) {
             if (room.getRoomName().equals(chatMessage.getRoomName())) {
                 room.removeAllUsers();
             }
@@ -128,9 +128,10 @@ public class ChatController {
 
     @MessageMapping("/chat.terminateRoom")
     public void terminateRoom(@Payload ChatMessage chatMessage) {
+    	logger.info("Terminating room " + chatMessage.getRoomName());
         messagingTemplate.convertAndSend("/room/" + chatMessage.getRoomName(), chatMessage);
 
         // Remove room from allRooms list
-        allRooms.removeIf((Room r) -> r.getRoomName().equals(chatMessage.getRoomName()));
+        Room.allRooms.removeIf((Room r) -> r.getRoomName().equals(chatMessage.getRoomName()));
     }
 }

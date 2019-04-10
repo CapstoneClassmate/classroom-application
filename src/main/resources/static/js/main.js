@@ -108,18 +108,18 @@ function disconnected() {
 
    if (role === "host") {
        // Inform users that host left.
-       stompClient.send('/app/chat.userLeft', {}, JSON.stringify(chatMessage));
+       server.send('/app/chat.userLeft', {}, JSON.stringify(chatMessage));
        // Remove the host & users from the room, and terminate the room
-       stompClient.send('/app/chat.removeAllUsers', {}, JSON.stringify(chatMessage));
-       stompClient.send('/app/chat.terminateRoom', {}, JSON.stringify(chatMessage));
+       server.send('/app/chat.removeAllUsers', {}, JSON.stringify(chatMessage));
+       server.send('/app/chat.terminateRoom', {}, JSON.stringify(chatMessage));
        // Navigate user to home page
        chatPage.classList.add('hidden');
        sessionChooser.classList.remove('hidden');
    } else if (role === "member") {
        // Remove user from room
-       stompClient.send('/app/chat.removeUser', {}, JSON.stringify(chatMessage));
+       server.send('/app/chat.removeUser', {}, JSON.stringify(chatMessage));
        // Send the leave message for both.
-       stompClient.send('/app/chat.userLeft', {}, JSON.stringify(chatMessage));
+       server.send('/app/chat.userLeft', {}, JSON.stringify(chatMessage));
        // Navigate user to home page
        chatPage.classList.add('hidden');
        sessionChooser.classList.remove('hidden');
