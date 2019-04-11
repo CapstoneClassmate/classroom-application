@@ -4,6 +4,7 @@ var usernamePage = document.querySelector('#username-page');
 var roomSelectorPage = document.querySelector("#room-selector")
 var chatPage = document.querySelector('#chat-page');
 var sessionChooser = document.querySelector('#session-chooser');
+var hostRoomGenPage = document.querySelector('#host-room-gen');
 
 var usernameForm = document.querySelector('#usernameForm');
 var roomSelectorForm = document.querySelector('#roomSelectorForm');
@@ -29,12 +30,19 @@ function setRole(value) {
     if(value === "host") {
         role = "host";
         sessionChooser.classList.add('hidden');
-        roomSelectorPage.classList.remove('hidden');
+        hostRoomGenPage.classList.remove('hidden');
     } else if(value === "member") {
         role = "member";
         sessionChooser.classList.add('hidden');
         roomSelectorPage.classList.remove('hidden');
     }    
+}
+
+function generateRoom() {
+    room = randName();
+    console.log(room);
+    hostRoomGenPage.classList.add('hidden');
+    usernamePage.classList.remove('hidden');
 }
 
 function roomEntered(event) {
@@ -226,3 +234,18 @@ roomSelectorForm.addEventListener('submit', roomEntered, true);
 usernameForm.addEventListener('submit', connect, true);
 messageForm.addEventListener('submit', sendMessage, true);
 // window.onbeforeunload = disconnected;
+
+
+var color = [
+    'Red', 'Blue', 'Yellow', 'Green', 'Orange', 'Purple', 'Black', 'White', 'Brown', 'Gray'
+]
+
+var noun = [
+    'Cat', 'Fish', 'Lizard', 'Zebra', 'Elephant', 'Tiger', 'Lion', 'Giraffe', 'Cheetah', 'Turtle'
+]
+
+function randName() {
+    return color[Math.floor(Math.random() * (color.length))]
+    + noun[Math.floor(Math.random() * (noun.length))]
+    + Math.floor(Math.random() * (99));
+}
