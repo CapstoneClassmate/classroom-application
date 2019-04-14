@@ -162,6 +162,23 @@ function sendMessage(event) {
     event.preventDefault();
 }
 
+function relayMessage(message) {
+
+    if(server) {
+        var chatMessage = {
+            sender: username,
+            content: message.content,
+            type: 'CHAT',
+            roomName: room,
+            role: role
+        };
+
+        server.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
+        messageInput.value = '';
+    }
+    event.preventDefault();
+}
+
 
 // This function I think will be able to handle other events from the server that are not messages
 // Mostly errors, ex: The room name is already taken, the username is already taken etc
@@ -199,7 +216,24 @@ function onServerMessageReceived(payload) {
 	        var usernameElement = document.createElement('span');
 	        var usernameText = document.createTextNode(message.sender);
 	        usernameElement.appendChild(usernameText);
-	        messageElement.appendChild(usernameElement);
+            messageElement.appendChild(usernameElement);
+            
+            if(message.role === 'member' && role === 'host'){
+                var show = document.createElement('button');
+                show.innerHTML = "O";
+                show.className = "primary";
+                show.onclick = function() {relayMessage(message);};
+                messageElement.appendChild(show);
+
+                var del = document.createElement('button');
+                del.innerHTML = "X";
+                del.className = "disconnect";
+                del.onclick = function() {
+                    var ul = document.getElementById('messageArea');
+                    ul.removeChild(messageElement);
+                };
+                messageElement.appendChild(del);
+            }
 	    }
 	
 	    var textElement = document.createElement('p');
