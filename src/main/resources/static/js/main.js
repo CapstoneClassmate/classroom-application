@@ -4,6 +4,7 @@ var usernamePage = document.querySelector('#username-page');
 var roomSelectorPage = document.querySelector("#room-selector")
 var chatPage = document.querySelector('#chat-page');
 var sessionChooser = document.querySelector('#session-chooser');
+var hostRoomGenPage = document.querySelector('#host-room-gen');
 
 var usernameForm = document.querySelector('#usernameForm');
 var roomSelectorForm = document.querySelector('#roomSelectorForm');
@@ -29,12 +30,19 @@ function setRole(value) {
     if(value === "host") {
         role = "host";
         sessionChooser.classList.add('hidden');
-        roomSelectorPage.classList.remove('hidden');
+        hostRoomGenPage.classList.remove('hidden');
     } else if(value === "member") {
         role = "member";
         sessionChooser.classList.add('hidden');
         roomSelectorPage.classList.remove('hidden');
     }    
+}
+
+function generateRoom() {
+    room = randName();
+    console.log(room);
+    hostRoomGenPage.classList.add('hidden');
+    usernamePage.classList.remove('hidden');
 }
 
 function roomEntered(event) {
@@ -154,6 +162,23 @@ function sendMessage(event) {
     event.preventDefault();
 }
 
+function relayMessage(message) {
+
+    if(server) {
+        var chatMessage = {
+            sender: username,
+            content: message.content,
+            type: 'CHAT',
+            roomName: room,
+            role: role
+        };
+
+        server.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
+        messageInput.value = '';
+    }
+    event.preventDefault();
+}
+
 
 // This function I think will be able to handle other events from the server that are not messages
 // Mostly errors, ex: The room name is already taken, the username is already taken etc
@@ -191,7 +216,24 @@ function onServerMessageReceived(payload) {
 	        var usernameElement = document.createElement('span');
 	        var usernameText = document.createTextNode(message.sender);
 	        usernameElement.appendChild(usernameText);
-	        messageElement.appendChild(usernameElement);
+            messageElement.appendChild(usernameElement);
+            
+            if(message.role === 'member' && role === 'host'){
+                var show = document.createElement('button');
+                show.innerHTML = "O";
+                show.className = "primary";
+                show.onclick = function() {relayMessage(message);};
+                messageElement.appendChild(show);
+
+                var del = document.createElement('button');
+                del.innerHTML = "X";
+                del.className = "disconnect";
+                del.onclick = function() {
+                    var ul = document.getElementById('messageArea');
+                    ul.removeChild(messageElement);
+                };
+                messageElement.appendChild(del);
+            }
 	    }
 	
 	    var textElement = document.createElement('p');
@@ -226,3 +268,18 @@ roomSelectorForm.addEventListener('submit', roomEntered, true);
 usernameForm.addEventListener('submit', connect, true);
 messageForm.addEventListener('submit', sendMessage, true);
 // window.onbeforeunload = disconnected;
+
+
+var color = [
+    'Red', 'Blue', 'Yellow', 'Green', 'Orange', 'Purple', 'Black', 'White', 'Brown', 'Gray'
+]
+
+var noun = [
+    'Cat', 'Fish', 'Lizard', 'Zebra', 'Elephant', 'Tiger', 'Lion', 'Giraffe', 'Cheetah', 'Turtle'
+]
+
+function randName() {
+    return color[Math.floor(Math.random() * (color.length))]
+    + noun[Math.floor(Math.random() * (noun.length))]
+    + Math.floor(Math.random() * (99));
+}
