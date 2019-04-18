@@ -137,6 +137,24 @@ button.disconnect {
     color: #fff;
 }
 
+button.relay {
+    background-color: #128ff2;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.12);
+    color: #fff;
+    padding: 0.2rem 0.5rem;
+    min-height: 10px;
+    margin: 0rem 0.2rem;
+}
+
+button.delete {
+    background-color: #ff4743;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.12);
+    color: #fff;
+    padding: 0.2rem 0.5rem;
+    min-height: 10px;
+    margin: 0rem 0.1rem;
+}
+
 button.accent {
     background-color: #ff4743;
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.12);

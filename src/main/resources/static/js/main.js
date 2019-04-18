@@ -166,7 +166,7 @@ function relayMessage(message) {
 
     if(server) {
         var chatMessage = {
-            sender: username,
+            sender: username + ' (echo)',
             content: message.content,
             type: 'CHAT',
             roomName: room,
@@ -209,7 +209,7 @@ function onServerMessageReceived(payload) {
 	        var avatarElement = document.createElement('i');
 	        var avatarText = document.createTextNode(message.sender[0]);
 	        avatarElement.appendChild(avatarText);
-	        avatarElement.style['background-color'] = getAvatarColor(message.sender);
+	        avatarElement.style['background-color'] = getAvatarColor(message.sender,message.role);
 	
 	        messageElement.appendChild(avatarElement);
 	
@@ -221,13 +221,13 @@ function onServerMessageReceived(payload) {
             if(message.role === 'member' && role === 'host'){
                 var show = document.createElement('button');
                 show.innerHTML = "O";
-                show.className = "primary";
+                show.className = "relay";
                 show.onclick = function() {relayMessage(message);};
                 messageElement.appendChild(show);
 
                 var del = document.createElement('button');
                 del.innerHTML = "X";
-                del.className = "disconnect";
+                del.className = "delete";
                 del.onclick = function() {
                     var ul = document.getElementById('messageArea');
                     ul.removeChild(messageElement);
@@ -254,14 +254,19 @@ function uuidv4() {
   )
 }
 
-function getAvatarColor(messageSender) {
-    var hash = 0;
-    for (var i = 0; i < messageSender.length; i++) {
-        hash = 31 * hash + messageSender.charCodeAt(i);
-    }
+function getAvatarColor(messageSender,role) {
+    if(role === 'member'){
+        var hash = 0;
+        for (var i = 0; i < messageSender.length; i++) {
+            hash = 31 * hash + messageSender.charCodeAt(i);
+        }
 
-    var index = Math.abs(hash % colors.length);
-    return colors[index];
+        var index = Math.abs(hash % colors.length);
+        return colors[index];
+    }
+    else {
+        return "#808080";
+    }
 }
 
 roomSelectorForm.addEventListener('submit', roomEntered, true);
