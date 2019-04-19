@@ -20,6 +20,7 @@ var username = null;
 var room = null;
 var role = null;
 var uuid = null;
+var prevRoom = null;
 
 var colors = [
     '#2196F3', '#32c787', '#00BCD4', '#ff5652',
@@ -86,6 +87,11 @@ function onConnected() {
         host: username,
         uuid: null
     };
+
+    //clear the chat history of the user so it does not show if they connect to new room
+    if(prevRoom !== room){
+        clearList(document.getElementById('messageArea'));
+    }
     
     if (role === "host") {
         roomObject.uuid = uuidv4();
@@ -99,6 +105,7 @@ function onConnected() {
         // Subscribe to the indivudals room
         server.subscribe('/room/' + room + '/' + username, onServerMessageReceived);
     }
+
     // Send the join messsage for both.
     server.send('/app/chat.sendMessage', {}, JSON.stringify(chatMessage))
     connectingElement.classList.add('hidden');
@@ -113,6 +120,7 @@ function disconnected() {
        roomName: room,
        role: role
    };
+   prevRoom = room;
 
    if (role === "host") {
        // Inform users that host left.
@@ -201,7 +209,7 @@ function onServerMessageReceived(payload) {
 	        message.content = message.sender + ' joined!';
 	    } else if (message.type === 'LEAVE') {
 	        messageElement.classList.add('event-message');
-	        message.content = message.sender + ' left!';
+            message.content = message.sender + ' left!';
 	    } else {
 	  
 	        messageElement.classList.add('chat-message');
@@ -245,6 +253,12 @@ function onServerMessageReceived(payload) {
 	    messageArea.appendChild(messageElement);
 	    messageArea.scrollTop = messageArea.scrollHeight;
 	}
+}
+
+function clearList(list) {
+    while (list.hasChildNodes()) {
+        list.removeChild(list.firstChild);
+    }
 }
 
 
